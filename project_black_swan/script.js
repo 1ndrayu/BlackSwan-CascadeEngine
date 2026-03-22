@@ -39,31 +39,6 @@ const tableBody = document.getElementById('table-body');
 // Navigation
 const navLinks = document.querySelectorAll('.nav-link');
 
-// Slider Value Labels
-const sliderInputs = document.querySelectorAll('.slider');
-const valueLabels = {
-    'densities': document.getElementById('label-densities'),
-    'dimension_scales': document.getElementById('label-dimension_scales'),
-    'regions': document.getElementById('label-regions'),
-    'scenarios': document.getElementById('label-scenarios'),
-    'initial_shock': document.getElementById('label-initial_shock')
-};
-
-// Initialize listeners
-const debouncedSubmit = debounce(() => form.dispatchEvent(new Event('submit')), 350);
-
-sliderInputs.forEach(input => {
-    input.addEventListener('input', () => {
-        let val = input.value;
-        if (input.id === 'initial_shock') {
-            val = (val / 1000000).toFixed(1) + 'M';
-        }
-        if (valueLabels[input.id]) {
-            valueLabels[input.id].innerText = val;
-        }
-    });
-});
-
 form.addEventListener('submit', async (e) => {
     e.preventDefault();
     
@@ -79,21 +54,9 @@ form.addEventListener('submit', async (e) => {
     chartLoader.classList.remove('hidden');
     resultsTableTile.classList.add('hidden');
     
-    // Generate Density Range for curve visualization
-    const maxDensity = parseFloat(document.getElementById('densities').value);
-    const densitySteps = 8;
-    const densityArray = Array.from({length: densitySteps}, (_, i) => {
-        const val = 0.1 + (i * (maxDensity - 0.1) / (densitySteps - 1));
-        return val.toFixed(2);
-    }).join(',');
-
-    // Generate Scale comparative lines
-    const maxScale = parseInt(document.getElementById('dimension_scales').value);
-    const scalesArray = [Math.round(maxScale * 0.5), maxScale].join(',');
-
     const payload = {
-        densities: densityArray,
-        dimension_scales: scalesArray,
+        densities: document.getElementById('densities').value,
+        dimension_scales: document.getElementById('dimension_scales').value,
         regions: String(document.getElementById('regions').value),
         scenarios: String(document.getElementById('scenarios').value),
         time_units: String(document.getElementById('time_units').value),
@@ -134,36 +97,24 @@ form.addEventListener('submit', async (e) => {
 });
 
 /**
- * Returns N discrete colors from a luxury Blue -> Green -> Red gradient
+ * Returns N discrete colors from a standard high-contrast palette
  */
-function getGradientPalette(n) {
-    const colors = [
-        [37, 99, 235],   // Institutional Blue (#2563EB)
-        [16, 185, 129],  // Emerald Green (#10B981)
-        [220, 38, 38]    // Crimson Red (#DC2626)
+function getStandardPalette(n) {
+    const standardColors = [
+        '#2563EB', // Blue
+        '#DC2626', // Red
+        '#10B981', // Emerald
+        '#F59E0B', // Amber/Orange
+        '#7C3AED', // Purple
+        '#0891B2', // Cyan
+        '#EA580C', // Orange
+        '#4F46E5', // Indigo
+        '#BE185D'  // Pink
     ];
-
-    if (n <= 1) return [`rgb(${colors[0].join(',')})`];
     
     const palette = [];
     for (let i = 0; i < n; i++) {
-        const t = i / (n - 1);
-        let r, g, b;
-
-        if (t <= 0.5) {
-            // Blue to Green
-            const f = t * 2;
-            r = Math.round(colors[0][0] + f * (colors[1][0] - colors[0][0]));
-            g = Math.round(colors[0][1] + f * (colors[1][1] - colors[0][1]));
-            b = Math.round(colors[0][2] + f * (colors[1][2] - colors[0][2]));
-        } else {
-            // Green to Red
-            const f = (t - 0.5) * 2;
-            r = Math.round(colors[1][0] + f * (colors[2][0] - colors[1][0]));
-            g = Math.round(colors[1][1] + f * (colors[2][1] - colors[1][1]));
-            b = Math.round(colors[1][2] + f * (colors[2][2] - colors[1][2]));
-        }
-        palette.push(`rgb(${r},${g},${b})`);
+        palette.push(standardColors[i % standardColors.length]);
     }
     return palette;
 }
@@ -219,7 +170,7 @@ function renderChart(data) {
 
     if (performanceChart) performanceChart.destroy();
 
-    const colors = getGradientPalette(data.datasets.length);
+    const colors = getStandardPalette(data.datasets.length);
 
     const datasets = data.datasets.map((ds, index) => {
         const color = colors[index];

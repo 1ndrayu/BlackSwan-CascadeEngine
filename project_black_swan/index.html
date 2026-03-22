@@ -40,29 +40,7 @@
                 </div>
             </header>
 
-            <!-- Detailed About Section -->
-            <div class="tile tile-about">
-                <div class="tile-header">
-                    <h2 class="tile-title">Understanding the CASCADE Engine</h2>
-                </div>
-                <div class="about-content">
-                    <p>
-                        Imagine a massive web of interconnected assets—like power grids, banks, or supply lines. 
-                        In a healthy state, the web is flexible. But as it becomes more <strong>dense</strong> and tightly packed, 
-                        a single point of failure can no longer be contained. It spreads like a wildfire.
-                    </p>
-                    <p>
-                        This is the <strong>"Jenga Effect"</strong>: as you add more connections (Density), the system becomes more 
-                        efficient but also more fragile. The <strong>CASCADE Risk Engine</strong> puts this web under extreme pressure. 
-                        By sliding the controls below, you define the "Stress Vacuum"—essentially setting up a disaster scenario 
-                        to see if your network survives or snaps.
-                    </p>
-                    <p>
-                        When you click <strong>Run Fracture Test</strong>, the engine instantly calculates thousands of potential futures, 
-                        finding the exact "Break Point" where your network would cross the point of no return.
-                    </p>
-                </div>
-            </div>
+
 
             <!-- Consolidated Metrics Row (Neutralized) -->
             <div class="metrics-integrated-row">
@@ -93,47 +71,52 @@
                     <form id="simulation-form" class="controls-form">
                         <div class="field">
                             <div class="label-stack">
-                                <label>Network Density</label>
-                                <span id="label-densities" class="value-badge">2.0</span>
+                                <label>Network Density (e.g. 0.1, 0.5, 2.0)</label>
                             </div>
-                            <input id="densities" type="range" min="0.1" max="10.0" step="0.1" value="2.0" class="slider" />
-                        </div>
-                        
-                        <div class="field">
-                            <div class="label-stack">
-                                <label>System Scale</label>
-                                <span id="label-dimension_scales" class="value-badge">100</span>
-                            </div>
-                            <input id="dimension_scales" type="range" min="10" max="500" step="10" value="100" class="slider" />
+                            <input id="densities" type="text" value="0.1, 0.5, 1.0, 2.0, 5.0" class="input-field" />
                         </div>
 
                         <div class="field">
                             <div class="label-stack">
-                                <label>Fault Zones</label>
-                                <span id="label-regions" class="value-badge">20</span>
+                                <label>System Scale (e.g. 10, 50, 100)</label>
                             </div>
-                            <input id="regions" type="range" min="1" max="50" step="1" value="20" class="slider" />
+                            <input id="dimension_scales" type="text" value="10, 50, 100, 250" class="input-field" />
                         </div>
 
                         <div class="field">
                             <div class="label-stack">
-                                <label>What-if Cases</label>
-                                <span id="label-scenarios" class="value-badge">10</span>
+                                <label>Fault Zones (Regions)</label>
                             </div>
-                            <input id="scenarios" type="range" min="1" max="50" step="1" value="10" class="slider" />
+                            <input id="regions" type="number" value="20" class="input-field" />
+                        </div>
+
+                        <div class="field">
+                            <div class="label-stack">
+                                <label>What-if Cases (Scenarios)</label>
+                            </div>
+                            <input id="scenarios" type="number" value="10" class="input-field" />
                         </div>
 
                         <div class="field">
                             <div class="label-stack">
                                 <label>Initial Shock Value</label>
-                                <span id="label-initial_shock" class="value-badge">1.0M</span>
                             </div>
-                            <input id="initial_shock" type="range" min="10000" max="5000000" step="10000" value="1000000" class="slider" />
+                            <input id="initial_shock" type="number" value="1000000" class="input-field" />
                         </div>
 
-                        <!-- Technical Defaults (Internal) -->
-                        <input id="time_units" type="hidden" value="12" />
-                        <input id="num_nodes" type="hidden" value="1000" />
+                        <div class="field">
+                            <div class="label-stack">
+                                <label>Time Horizon (Units)</label>
+                            </div>
+                            <input id="time_units" type="number" value="12" class="input-field" />
+                        </div>
+
+                        <div class="field">
+                            <div class="label-stack">
+                                <label>Node Ceiling (Max Nodes)</label>
+                            </div>
+                            <input id="num_nodes" type="number" value="500" class="input-field" />
+                        </div>
 
                         <button type="submit" id="run-btn" class="run-button">Run Fracture Test</button>
                     </form>
@@ -156,6 +139,35 @@
                         </div>
                     </div>
                 </section>
+            </div>
+
+            <!-- Detailed About Section -->
+            <div class="tile tile-about">
+                <div class="tile-header">
+                    <h2 class="tile-title">Understanding the CASCADE Engine</h2>
+                </div>
+                <div class="about-content">
+                    <p>
+                        Imagine a massive web of interconnected assets like power grids, banks, or supply lines.
+                        In a healthy state, the web is flexible. But as it becomes more <strong>dense</strong> and
+                        tightly packed,
+                        a single point of failure can no longer be contained. It spreads like a wildfire.
+                    </p>
+                    <p>
+                        This is the <strong>"Jenga Effect"</strong>: as you add more connections (Density), the system
+                        becomes more
+                        efficient but also more fragile. The <strong>CASCADE Risk Engine</strong> puts this web under
+                        extreme pressure.
+                        By sliding the controls below, you define the "Stress Vacuum"—essentially setting up a disaster
+                        scenario
+                        to see if your network survives or snaps.
+                    </p>
+                    <p>
+                        When you click <strong>Run Fracture Test</strong>, the engine instantly calculates thousands of
+                        potential futures,
+                        finding the exact "Break Point" where your network would cross the point of no return.
+                    </p>
+                </div>
             </div>
 
             <!-- Results Table Tile -->

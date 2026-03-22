@@ -1,33 +1,35 @@
 @echo off
-setlocal
+setlocal enabledelayedexpansion
 title CASCADE RISK ENGINE: Fracture Telemetry
 
-echo [1/3] Checking environment...
+cd /d "%~dp0"
+
+echo ==================================================
+echo  CASCADE RISK ENGINE - Setup
+echo ==================================================
+
 python --version >nul 2>&1
-if %errorlevel% neq 0 (
-    echo [ERROR] Python is not installed or not in your PATH.
-    echo Please install Python from https://www.python.org/
+if !errorlevel! neq 0 (
+    echo [ERROR] Python not found.
     pause
     exit /b 1
 )
 
-echo [2/3] Installing/Verifying dependencies (numpy, scipy, matplotlib)...
-python -m pip install numpy scipy matplotlib >nul 2>&1
+if not exist .venv (
+    echo [1/3] Creating venv...
+    python -m venv .venv
+) else (
+    echo [1/3] venv exists.
+)
 
-echo [3/3] Launching CASCADE RISK ENGINE Dashboard...
-echo Dashboard will be available at http://localhost:8081
+echo [2/3] Installing dependencies...
+call .venv\Scripts\activate
+python -m pip install -r requirements.txt
 
-:: Start the server in a new window so it stays running
-start "CASCADE RISK ENGINE Server" cmd /c "cd /d %~dp0 && python server.py"
-
-:: Give it a second to spin up
-timeout /t 2 /nobreak >nul
-
-:: Open the browser
+echo [3/3] Launching...
+start "CASCADE Server" cmd /c "call .venv\Scripts\activate && python server.py"
+timeout /t 3 /nobreak >nul
 start http://localhost:8081
 
-echo.
-echo [SUCCESS] CASCADE RISK ENGINE is live! 
-echo Keep the server terminal window open while using the dashboard.
-echo.
+echo [SUCCESS] Running!
 pause

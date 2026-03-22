@@ -1,84 +1,113 @@
 import numpy as np
-import scipy.sparse as sp
 from collections import defaultdict, deque
-from typing import Tuple, Dict, List
+from typing import Tuple, Dict, List, Callable
+from math import prod
 from telemetry import us_timer
+
+# Type alias for 4D coordinate clarity
+Coord4D = Tuple[int, int, int, int]
 
 class RiskCube:
     """
-    4D Tensor storage [Assets, Regions, Scenarios, Time]
-    Supports dense (numpy) and sparse (COO/DOK) storage.
+    4D Tensor storage [Assets, Regions, Scenarios, Time].
+    Dynamically binds accessors to eliminate runtime 'if' checks.
     """
-    def __init__(self, dims: Tuple[int, int, int, int], use_sparse: bool = False):
+    def __init__(self, dims: Coord4D, use_sparse: bool = False):
         self.dims = dims
         self.use_sparse = use_sparse
-        self.total_elements = 1
-        for d in dims:
-            self.total_elements *= d
+        self.total_elements = prod(dims)
         
+        # Method binding for performance
         if not self.use_sparse:
-            # Memory intensive for high dimensions
             self.data = np.zeros(dims, dtype=np.float64)
+            self.get_val: Callable[[Coord4D], float] = self._get_dense
+            self.set_val: Callable[[Coord4D, float], None] = self._set_dense
         else:
-            # Sparse storage for 4D space via flattened indexing
-            self.data = sp.dok_array((1, self.total_elements), dtype=np.float64)
+            # DOK (Dictionary of Keys) implementation using native dict
+            self.data = defaultdict(float)
+            self.get_val = self._get_sparse
+            self.set_val = self._set_sparse
 
-    def _flat_idx(self, coord: Tuple[int, int, int, int]) -> int:
-        i, j, k, l = coord
-        d0, d1, d2, d3 = self.dims
-        # Row-major flattening for 4D
-        return i * (d1 * d2 * d3) + j * (d2 * d3) + k * d3 + l
-
-    def get_val(self, coord: Tuple[int, int, int, int]) -> float:
-        if self.use_sparse:
-            return self.data[0, self._flat_idx(coord)]
+    def _get_dense(self, coord: Coord4D) -> float:
         return self.data[coord]
 
-    def set_val(self, coord: Tuple[int, int, int, int], val: float):
-        if self.use_sparse:
-            self.data[0, self._flat_idx(coord)] = val
-        else:
-            self.data[coord] = val
+    def _set_dense(self, coord: Coord4D, val: float):
+        self.data[coord] = val
+
+    def _get_sparse(self, coord: Coord4D) -> float:
+        return self.data[coord]
+
+    def _set_sparse(self, coord: Coord4D, val: float):
+        self.data[coord] = val
+
 
 class RippleEngine:
     """
-    Implements a Directed Acyclic Graph (DAG) for propagates risk shocks.
+    Graph-based propagation engine for risk shocks.
+    Optimized for precision and traversal speed.
     """
     def __init__(self, cube: RiskCube):
         self.cube = cube
-        self.graph: Dict[Tuple, List[Tuple[Tuple, float]]] = defaultdict(list)
+        self.graph: Dict[Coord4D, List[Tuple[Coord4D, float]]] = defaultdict(list)
         
-    def add_dependency(self, source: Tuple, target: Tuple, weight: float):
-        """Adds a weighted link from source to target coordinate."""
+    def add_dependency(self, source: Coord4D, target: Coord4D, weight: float):
+        """Adds a weighted edge from source to target."""
         self.graph[source].append((target, weight))
 
     @us_timer
-    def run_ripple(self, start_coord: Tuple, new_value: float):
+    def run_ripple(self, start_coord: Coord4D, new_value: float, epsilon: float = 1e-9, limit: int = 1_000_000):
         """
-        Calculates the cascade effect of a local change.
-        Iterative BFS-like visitor to prevent recursion depth issues.
+        Propagates the delta from start_coord through the dependency graph.
+        
+        Args:
+            start_coord: The 4D coordinate where the shock originates.
+            new_value: The new absolute value for that coordinate.
+            epsilon: The minimum change magnitude to propagate.
+            limit: Maximum iterations to prevent infinite loops in cyclic graphs.
         """
         old_val = self.cube.get_val(start_coord)
         delta = new_value - old_val
         
-        if abs(delta) < 1e-6:
+        # Exit if the initial change is below the floor
+        if abs(delta) <= epsilon:
             return
             
         self.cube.set_val(start_coord, new_value)
-        queue = deque([(start_coord, delta)])
         
-        # Propagation limit to prevent infinite loops if graph has cycles
-        limit = 50000 
+        # Impact aggregation: maps node -> current accumulated delta for this wave
+        pending_impacts = defaultdict(float)
+        queue = deque([start_coord])
+        pending_impacts[start_coord] = delta
+        
         steps = 0
         
+        # Cache method references to avoid dot-lookup overhead in tight loop
+        get_val = self.cube.get_val
+        set_val = self.cube.set_val
+        graph_get = self.graph.get
+        
         while queue and steps < limit:
-            current_coord, current_delta = queue.popleft()
+            current_coord = queue.popleft()
+            current_delta = pending_impacts.pop(current_coord)
             steps += 1
             
-            for target_coord, weight in self.graph.get(current_coord, []):
+            # Retrieve downstream dependencies
+            dependencies = graph_get(current_coord)
+            if not dependencies:
+                continue
+                
+            for target_coord, weight in dependencies:
                 impact = current_delta * weight
                 
-                if abs(impact) > 1e-6:
-                    target_val = self.cube.get_val(target_coord)
-                    self.cube.set_val(target_coord, target_val + impact)
-                    queue.append((target_coord, impact))
+                # Sensible floor check: skip microscopic noise
+                if abs(impact) > epsilon:
+                    # Update the cube state
+                    current_target_val = get_val(target_coord)
+                    set_val(target_coord, current_target_val + impact)
+                    
+                    # If target is already in queue, just add to its pending impact
+                    # If not, add it to the queue to process its children later
+                    if target_coord not in pending_impacts:
+                        queue.append(target_coord)
+                    
+                    pending_impacts[target_coord] += impact

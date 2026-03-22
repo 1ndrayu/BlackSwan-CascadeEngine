@@ -451,6 +451,39 @@ tr:hover td {
     border-radius: 2px;
 }
 
+.slider-handle::after {
+  content: "";
+  display: block;
+  width: 4px;
+  height: 12px;
+  background: rgba(0, 0, 0, 0.2);
+  border-radius: 2px;
+}
+
+.input-field {
+  width: 100%;
+  padding: 0.75rem 1rem;
+  background: #FFFFFF;
+  border: 1px solid var(--border-dim);
+  border-radius: 8px;
+  color: var(--text-primary);
+  font-family: inherit;
+  font-size: 0.9rem;
+  font-weight: 600;
+  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.input-field:focus {
+  outline: none;
+  background: #FFFFFF;
+  border-color: var(--border-focus);
+  box-shadow: 0 0 0 4px rgba(24, 24, 27, 0.05);
+}
+
+.input-field::placeholder {
+  color: var(--text-ghost);
+}
+
 .glossary-body {
     font-size: 13px;
     color: var(--text-muted);

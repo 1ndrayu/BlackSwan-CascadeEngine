@@ -63,7 +63,7 @@ class DashboardHandler(SimpleHTTPRequestHandler):
         self.send_response(404)
         self.end_headers()
 
-def run_server(port=6001):
+def run_server(port=8081):
     server_address = ('', port)
     httpd = HTTPServer(server_address, DashboardHandler)
     print("--------------------------------------------------")
