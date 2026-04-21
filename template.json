@@ -75,6 +75,109 @@
                     "Manual_Recovery_Delay"
                 ]
             }
+        },
+        {
+            "event": "Texas Power Grid Freeze",
+            "stress_parameters": {
+                "density": 0.65,
+                "scale": "Energy Utilities",
+                "shock_magnitude": 0.90,
+                "propagation_type": "cascading_blackout",
+                "time_horizon": "T+7_Days"
+            },
+            "risk_cube_dimensions": {
+                "assets": [
+                    "Natural_Gas_Extraction",
+                    "ERCOT_Substations",
+                    "Water_Treatment"
+                ],
+                "regions": [
+                    "Texas_Triangle",
+                    "Southern_Plains"
+                ],
+                "scenarios": [
+                    "Generation_Deficit",
+                    "Fuel_Supply_Freeze"
+                ]
+            }
+        },
+        {
+            "event": "TSMC Fab Disruption",
+            "stress_parameters": {
+                "density": 0.95,
+                "scale": "Tech Supply Chain",
+                "shock_magnitude": 0.85,
+                "propagation_type": "bottleneck_starvation",
+                "time_horizon": "T+6_Months"
+            },
+            "risk_cube_dimensions": {
+                "assets": [
+                    "5nm_Logic_Wafers",
+                    "Consumer_Electronics",
+                    "Auto_Semiconductors"
+                ],
+                "regions": [
+                    "Hsinchu_Park",
+                    "Shenzhen_Logistics",
+                    "Global_Auto_Hubs"
+                ],
+                "scenarios": [
+                    "Seismic_Event",
+                    "Geopolitical_Blockade"
+                ]
+            }
+        },
+        {
+            "event": "WannaCry Ransomware",
+            "stress_parameters": {
+                "density": 0.70,
+                "scale": "Cyber Resilience",
+                "shock_magnitude": 0.75,
+                "propagation_type": "worm_propagation",
+                "time_horizon": "T+72_Hours"
+            },
+            "risk_cube_dimensions": {
+                "assets": [
+                    "NHS_Databases",
+                    "Logistics_Tracking",
+                    "Unpatched_Legacy_OS"
+                ],
+                "regions": [
+                    "UK_Health_Nodes",
+                    "Russia_CIS",
+                    "Western_Europe"
+                ],
+                "scenarios": [
+                    "SMB_Exploit",
+                    "Kill_Switch_Activation"
+                ]
+            }
+        },
+        {
+            "event": "Evergrande Liquidity Crisis",
+            "stress_parameters": {
+                "density": 0.88,
+                "scale": "Real Estate Finance",
+                "shock_magnitude": 0.80,
+                "propagation_type": "collateral_deflation",
+                "time_horizon": "T+90_Days"
+            },
+            "risk_cube_dimensions": {
+                "assets": [
+                    "Offshore_Bonds",
+                    "Domestic_Retail_Wealth",
+                    "Concrete_Supply_Chain"
+                ],
+                "regions": [
+                    "Guangdong_Hub",
+                    "T1_Chinese_Cities",
+                    "Global_Emerging_Markets"
+                ],
+                "scenarios": [
+                    "Controlled_Deleveraging",
+                    "Disorderly_Liquidation"
+                ]
+            }
         }
     ]
-}
+}

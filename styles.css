@@ -2,7 +2,8 @@
 :root {
     --bg-main: #FFFFFF;
     --bg-tile: #FFFFFF;
-    --border-dim: #E4E4E7;
+    --border-dim: #F1F1F4;  /* Softer grey for cards */
+    --border-section: #D4D4D8; /* More visible divider grey */
     --border-focus: #18181B;
     
     --text-primary: #09090B;
@@ -158,7 +159,7 @@ body {
     display: flex;
     justify-content: space-between;
     align-items: flex-end;
-    border-bottom: 1px solid var(--border-dim);
+    border-bottom: 2px solid var(--border-section);
     padding-bottom: 16px;
     animation: soft-rise 0.8s var(--ease-soft) both;
 }
@@ -194,6 +195,7 @@ body {
 /* Tile Base */
 .tile {
     background: var(--bg-tile);
+    border: 1px solid var(--border-dim);
     border-radius: var(--radius-bento);
     padding: 24px;
     /* transition removed to allow JS position-lock */
@@ -673,9 +675,29 @@ tr:hover td {
 }
 
 .dropdown-content.open {
-    max-height: 400px;
+    max-height: 160px; /* Roughly 3 items */
     opacity: 1;
     pointer-events: auto;
+    overflow-y: auto;
+    z-index: 999;
+}
+
+/* Custom Scrollbar for Dropdown */
+.dropdown-content::-webkit-scrollbar {
+    width: 6px;
+}
+
+.dropdown-content::-webkit-scrollbar-track {
+    background: transparent;
+}
+
+.dropdown-content::-webkit-scrollbar-thumb {
+    background: #E4E4E7;
+    border-radius: 10px;
+}
+
+.dropdown-content::-webkit-scrollbar-thumb:hover {
+    background: #D4D4D8;
 }
 
 .template-option {
@@ -1029,5 +1051,114 @@ tr:hover td {
 @media (max-width: 768px) {
     .explanation-grid {
         grid-template-columns: 1fr;
+    }
+}
+
+/* Branding Footer Section */
+.branding-footer {
+    margin-top: 100px;
+    padding: 80px 0;
+    border-top: 2px solid var(--border-section);
+}
+
+.branding-inner {
+    display: flex;
+    flex-direction: column;
+    gap: 80px;
+}
+
+.branding-top {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+}
+
+.branding-tagline {
+    font-size: 48px;
+    font-weight: 800;
+    letter-spacing: -0.04em;
+    color: var(--text-primary);
+    max-width: 400px;
+    line-height: 1.1;
+}
+
+.branding-nav {
+    display: flex;
+    gap: 120px;
+}
+
+.nav-col {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+}
+
+.nav-col a {
+    text-decoration: none;
+    font-size: 14px;
+    font-weight: 600;
+    color: var(--text-primary);
+    transition: color 0.2s ease;
+}
+
+.nav-col a:hover {
+    color: var(--accent-blue);
+}
+
+.huge-branding-text {
+    font-size: min(20vw, 240px);
+    font-weight: 900;
+    letter-spacing: -0.06em;
+    color: var(--text-primary);
+    line-height: 0.8;
+    margin: 40px 0;
+    text-align: left;
+    width: 100%;
+}
+
+.branding-bottom {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    border-top: 1px solid var(--border-section);
+    padding-top: 40px;
+}
+
+.branding-logo-mini {
+    font-size: 14px;
+    font-weight: 900;
+    letter-spacing: 0.1em;
+}
+
+.branding-legal {
+    display: flex;
+    gap: 24px;
+}
+
+.branding-legal a {
+    text-decoration: none;
+    font-size: 12px;
+    font-weight: 600;
+    color: var(--text-muted);
+}
+
+.branding-legal a:hover {
+    color: var(--text-primary);
+}
+
+@media (max-width: 1024px) {
+    .branding-top {
+        flex-direction: column;
+        gap: 40px;
+    }
+    .branding-nav {
+        gap: 60px;
+    }
+}
+
+@media (max-width: 640px) {
+    .branding-nav {
+        flex-direction: column;
+        gap: 32px;
     }
 }

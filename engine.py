@@ -1,7 +1,6 @@
 import numpy as np
 from collections import defaultdict, deque
 from typing import Tuple, Dict, List, Callable
-from math import prod
 from telemetry import us_timer
 
 # Type alias for 4D coordinate clarity
@@ -15,7 +14,7 @@ class RiskCube:
     def __init__(self, dims: Coord4D, use_sparse: bool = False):
         self.dims = dims
         self.use_sparse = use_sparse
-        self.total_elements = prod(dims)
+        self.total_elements = int(np.prod(dims))
         
         # Method binding for performance
         if not self.use_sparse:
@@ -55,59 +54,63 @@ class RippleEngine:
         self.graph[source].append((target, weight))
 
     @us_timer
-    def run_ripple(self, start_coord: Coord4D, new_value: float, epsilon: float = 1e-9, limit: int = 1_000_000):
+    def run_ripple(self, start_node: Coord4D, shock_value: float, systemic_threshold: float = 1_000_000, epsilon: float = 1e-9, limit: int = 1_000_000) -> Dict:
         """
-        Propagates the delta from start_coord through the dependency graph.
-        
-        Args:
-            start_coord: The 4D coordinate where the shock originates.
-            new_value: The new absolute value for that coordinate.
-            epsilon: The minimum change magnitude to propagate.
-            limit: Maximum iterations to prevent infinite loops in cyclic graphs.
+        Propagates a shock and returns systemic impact telemetry.
         """
-        old_val = self.cube.get_val(start_coord)
-        delta = new_value - old_val
+        old_val = self.cube.get_val(start_node)
+        delta = shock_value - old_val
         
-        # Exit if the initial change is below the floor
         if abs(delta) <= epsilon:
-            return
+            return {"impact": 0.0, "fracture": False, "nodes_affected": 0}
             
-        self.cube.set_val(start_coord, new_value)
+        self.cube.set_val(start_node, shock_value)
         
-        # Impact aggregation: maps node -> current accumulated delta for this wave
         pending_impacts = defaultdict(float)
-        queue = deque([start_coord])
-        pending_impacts[start_coord] = delta
+        queue = deque([start_node])
+        pending_impacts[start_node] = delta
         
+        total_systemic_impact = abs(delta)
+        nodes_affected = 1
+        fractured = False
         steps = 0
         
-        # Cache method references to avoid dot-lookup overhead in tight loop
+        # Cache references
         get_val = self.cube.get_val
         set_val = self.cube.set_val
         graph_get = self.graph.get
         
         while queue and steps < limit:
-            current_coord = queue.popleft()
-            current_delta = pending_impacts.pop(current_coord)
+            current_node = queue.popleft()
+            current_delta = pending_impacts.pop(current_node)
             steps += 1
             
-            # Retrieve downstream dependencies
-            dependencies = graph_get(current_coord)
+            dependencies = graph_get(current_node)
             if not dependencies:
                 continue
                 
-            for target_coord, weight in dependencies:
+            for target_node, weight in dependencies:
                 impact = current_delta * weight
                 
-                # Sensible floor check: skip microscopic noise
                 if abs(impact) > epsilon:
-                    # Update the cube state
-                    current_target_val = get_val(target_coord)
-                    set_val(target_coord, current_target_val + impact)
+                    current_target_val = get_val(target_node)
+                    new_target_val = current_target_val + impact
+                    set_val(target_node, new_target_val)
                     
-                    # If target is already in queue, just add to its pending impact
-                    # If not, add it to the queue to process its children later
-                    if target_coord not in pending_impacts:
-                        queue.append(target_coord)
+                    total_systemic_impact += abs(impact)
+                    nodes_affected += 1
                     
-                    pending_impacts[target_coord] += impact
+                    if total_systemic_impact > systemic_threshold:
+                        fractured = True
+                    
+                    if target_node not in pending_impacts:
+                        queue.append(target_node)
+                    
+                    pending_impacts[target_node] += impact
+
+        return {
+            "impact": total_systemic_impact,
+            "fracture": fractured,
+            "nodes_affected": nodes_affected,
+            "steps": steps
+        }

@@ -152,12 +152,13 @@ function updateStats(data, payload) {
     const lastDataset = data.datasets[data.datasets.length - 1];
     const validData = lastDataset.data.filter(v => v !== null && v !== 0);
     
-    // Cascade Cost: Mean latency of the highest scale
-    const avgLatency = validData.reduce((a, b) => a + b, 0) / validData.length;
-    statLatency.innerText = Math.round(avgLatency || 0).toLocaleString();
+    // Cascade Cost: Mean impact of the highest scale
+    const avgImpact = validData.reduce((a, b) => a + b, 0) / validData.length;
+    statLatency.innerText = Math.round(avgImpact || 0).toLocaleString();
     
-    // Dynamic Break Point: Where highest scale crosses 500k µs
-    let bpIndex = lastDataset.data.findIndex(v => v > 500000);
+    // Dynamic Break Point: Where highest scale crosses 5x initial shock
+    const shockThreshold = Number(payload.initial_shock) * 5;
+    let bpIndex = lastDataset.data.findIndex(v => v > shockThreshold);
     if (bpIndex === -1) bpIndex = data.labels.length - 1;
     statBreak.innerText = data.labels[bpIndex] || "Safe";
     
@@ -204,11 +205,12 @@ function generateAnalystReport(data, payload) {
         const validData = lastDataset.data.filter(v => v !== null && v !== 0);
         if (validData.length === 0) return;
 
+        const shockThreshold = Number(payload.initial_shock) * 5;
         const startVal = lastDataset.data[0] || 1;
         const maxVal = Math.max(...validData);
         const factor = maxVal / startVal;
         
-        let bpIndex = lastDataset.data.findIndex(v => v > 500000);
+        let bpIndex = lastDataset.data.findIndex(v => v > shockThreshold);
         const hasBroken = bpIndex !== -1;
         const bpDensity = hasBroken ? data.labels[bpIndex] : null;
 
@@ -221,7 +223,7 @@ function generateAnalystReport(data, payload) {
         const exFactor = document.getElementById('ex-factor-val');
         const trendDesc = document.getElementById('visual-trend-desc');
 
-        if (exLatency) exLatency.innerText = `${Math.round(maxVal).toLocaleString()} µs`;
+        if (exLatency) exLatency.innerText = `${Math.round(maxVal).toLocaleString()}`;
         if (exBreak) exBreak.innerText = hasBroken ? bpDensity : "Safe";
         if (exFactor) exFactor.innerText = `${factor.toFixed(2)}x`;
 
@@ -412,14 +414,22 @@ function renderTemplateDropdown() {
     // Toggle Dropdown
     btn.onclick = (e) => {
         e.stopPropagation();
-        btn.classList.toggle('open');
+        const isOpen = btn.classList.toggle('open');
         list.classList.toggle('open');
+        
+        // Ensure the parent tile has high z-index when open to avoid clipping by next section
+        const parentTile = btn.closest('.tile');
+        if (parentTile) {
+            parentTile.style.zIndex = isOpen ? "1000" : "1";
+        }
     };
 
     // Close on click outside
     document.addEventListener('click', () => {
         btn.classList.remove('open');
         list.classList.remove('open');
+        const parentTile = btn.closest('.tile');
+        if (parentTile) parentTile.style.zIndex = "1";
     });
 
     // Select Template
