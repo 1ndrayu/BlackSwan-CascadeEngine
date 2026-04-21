@@ -40,11 +40,12 @@ class DashboardHandler(SimpleHTTPRequestHandler):
                 time_units = int(params.get('time_units', 12))
                 initial_shock = float(params.get('initial_shock', 1000000.0))
                 num_nodes = int(params.get('num_nodes', 500))
+                mode = params.get('mode', 'custom')
                 
-                print(f"Running simulation with: Scales={scales}, Densities={densities}")
+                print(f"Running {mode.upper()} simulation with: Scales={scales}, Densities={densities}")
                 
                 results = run_simulation(
-                    densities, scales, regions, scenarios, time_units, initial_shock, num_nodes
+                    densities, scales, regions, scenarios, time_units, initial_shock, num_nodes, mode=mode
                 )
                 
                 self.send_response(200)

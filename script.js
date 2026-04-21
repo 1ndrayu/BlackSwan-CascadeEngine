@@ -65,17 +65,20 @@ form.addEventListener('submit', async (e) => {
     let payload;
 
     if (isDecisionMode) {
-        const scenario = document.querySelector('.decision-card.selected').dataset.scenario;
+        const scenarioCard = document.querySelector('.decision-card.selected');
+        const scenario = scenarioCard.dataset.scenario;
         payload = getScenarioPayload(scenario);
+        payload.mode = scenario;
     } else {
         payload = {
             densities: document.getElementById('densities').value,
             dimension_scales: document.getElementById('dimension_scales').value,
-            regions: String(document.getElementById('regions').value),
-            scenarios: String(document.getElementById('scenarios').value),
-            time_units: String(document.getElementById('time_units').value),
-            num_nodes: String(document.getElementById('num_nodes').value),
-            initial_shock: String(document.getElementById('initial_shock').value)
+            regions: document.getElementById('regions').value,
+            scenarios: document.getElementById('scenarios').value,
+            initial_shock: document.getElementById('initial_shock').value,
+            time_units: document.getElementById('time_units').value,
+            num_nodes: document.getElementById('num_nodes').value,
+            mode: 'custom'
         };
     }
 
@@ -99,7 +102,12 @@ form.addEventListener('submit', async (e) => {
             generateAnalystReport(data, payload);
             
             resultsTableTile.classList.remove('hidden');
-            breakPointAnnotation.classList.remove('hidden'); 
+            
+            if (data.hasBroken) {
+                breakPointAnnotation.classList.remove('hidden'); 
+            } else {
+                breakPointAnnotation.classList.add('hidden');
+            }
             
             // Auto-scroll to Outcome Analyst if in Decision Mode
             if (isDecisionMode) {
@@ -174,24 +182,24 @@ function updateStats(data, payload) {
 function getScenarioPayload(scenario) {
     const scenarios = {
         'isolated': {
-            densities: "0.05, 0.1, 0.15, 0.2, 0.25",
-            dimension_scales: "10, 20, 30, 50",
-            regions: "5", scenarios: "10", time_units: "12", num_nodes: "500", initial_shock: "100000"
+            densities: "0.05, 0.1, 0.15, 0.2, 0.25, 0.3",
+            dimension_scales: "50, 100, 150, 200, 250",
+            regions: "10", scenarios: "5", time_units: "48", num_nodes: "500", initial_shock: "500000"
         },
         'regional': {
-            densities: "0.2, 0.4, 0.6, 0.8, 1.0",
-            dimension_scales: "20, 50, 80, 100",
-            regions: "15", scenarios: "15", time_units: "24", num_nodes: "1000", initial_shock: "500000"
+            densities: "0.5, 1.0, 1.5, 2.0, 2.5, 3.0",
+            dimension_scales: "100, 200, 300, 400, 500",
+            regions: "25", scenarios: "15", time_units: "72", num_nodes: "1000", initial_shock: "2000000"
         },
         'systemic': {
-            densities: "0.5, 0.8, 1.0, 1.2, 1.5",
-            dimension_scales: "50, 100, 200, 500",
-            regions: "40", scenarios: "20", time_units: "48", num_nodes: "2000", initial_shock: "1000000"
+            densities: "2.0, 4.0, 6.0, 8.0, 10.0, 12.0",
+            dimension_scales: "200, 400, 600, 800, 1000",
+            regions: "50", scenarios: "30", time_units: "96", num_nodes: "2000", initial_shock: "10000000"
         },
         'black_swan': {
-            densities: "1.0, 2.0, 3.0, 5.0, 10.0",
-            dimension_scales: "100, 250, 500, 1000",
-            regions: "100", scenarios: "50", time_units: "72", num_nodes: "5000", initial_shock: "5000000"
+            densities: "5.0, 8.0, 12.0, 15.0, 18.0, 22.0",
+            dimension_scales: "300, 600, 900, 1200, 1500",
+            regions: "80", scenarios: "50", time_units: "120", num_nodes: "3500", initial_shock: "50000000"
         }
     };
     return scenarios[scenario];
@@ -201,18 +209,17 @@ function generateAnalystReport(data, payload) {
     try {
         if (!data || !data.datasets || data.datasets.length === 0) return;
 
-        const lastDataset = data.datasets[data.datasets.length - 1];
-        const validData = lastDataset.data.filter(v => v !== null && v !== 0);
-        if (validData.length === 0) return;
-
-        const shockThreshold = Number(payload.initial_shock) * 5;
-        const startVal = lastDataset.data[0] || 1;
-        const maxVal = Math.max(...validData);
-        const factor = maxVal / startVal;
+        // Use global metrics calculated by the backend for consistency
+        const hasBroken = data.hasBroken;
+        const bpDensity = data.breakPointDensity;
+        const factor = data.factor || 1.0;
         
-        let bpIndex = lastDataset.data.findIndex(v => v > shockThreshold);
-        const hasBroken = bpIndex !== -1;
-        const bpDensity = hasBroken ? data.labels[bpIndex] : null;
+        // Find absolute maximum impact across all scales for the 'Cascade Cost'
+        let maxVal = 0;
+        data.datasets.forEach(ds => {
+            const m = Math.max(...ds.data.filter(v => v !== null));
+            if (m > maxVal) maxVal = m;
+        });
 
         // Dedicated Tab Elements
         const outcomeSummary = document.getElementById('outcome-summary');
@@ -226,61 +233,56 @@ function generateAnalystReport(data, payload) {
         if (exLatency) exLatency.innerText = `${Math.round(maxVal).toLocaleString()}`;
         if (exBreak) exBreak.innerText = hasBroken ? bpDensity : "Safe";
         if (exFactor) exFactor.innerText = `${factor.toFixed(2)}x`;
-
-        // --- Intelligence Logic Matrix ---
         let summaryText = "";
         let actionText = "";
         let chipText = "STABLE SYSTEM";
-        let chipColor = "#10B981";
+        let chipColor = "#34a853"; // Google Green
 
-        const isHighFactor = factor > 5;
-        const isCriticalLatency = maxVal > 1000000;
-        const isEarlyBreak = hasBroken && parseFloat(bpDensity) < 1.0;
-        
-        // Scenario A: Black Swan / Total Collapse
-        if (hasBroken && isHighFactor && isCriticalLatency) {
-            summaryText = `Warning: Systemic total fracture detected. The network hit a terminal "Feedback Loop" at ${bpDensity} density. Risk didn't just spread; it mutated, resulting in a ${factor.toFixed(1)}x amplification that renders structural recovery impossible.`;
-            actionText = "Full system reset required. Physical decoupling of regional nodes is the only way to contain the bleed. Current scale is working against you.";
-            chipText = "CRITICAL COLLAPSE";
-            chipColor = "#EF4444";
+        const isTerminal = factor > 10.0 && hasBroken;
+        const isFragile = hasBroken && factor <= 10.0;
+        const isContained = !hasBroken && factor > 1.5;
+        const isRobust = !hasBroken && factor <= 1.5;
+
+        if (isTerminal) {
+            summaryText = `Terminal failure detected. The system has suffered a 'Non-Linear Fracture' at ${bpDensity} density. Rare jumps have bypassed all safety perimeters, rendering structural recovery mathematically impossible.`;
+            actionText = "Immediate 'Kill-Switch' deployment required. Decouple regional nodes to contain the bleed. Structural reset is mandatory.";
+            chipText = "TERMINAL COLLAPSE";
+            chipColor = "#ea4335"; // Google Red
         } 
-        // Scenario B: Volatile Fragility (Low break point, high factor)
-        else if (isEarlyBreak && isHighFactor) {
-            summaryText = `This network is deceptively fragile. It snaps early (at ${bpDensity}) but the resulting explosion is massive. This suggests "Hyper-Dependency"—where even minor regions hold too much systemic weight.`;
-            actionText = "Decentralize core region roles. Your Cascade Factor of ${factor.toFixed(1)}x suggests your network is built like a 'house of cards'—efficient but zero-tolerance for error.";
-            chipText = "VOLATILE FRAGILITY";
-            chipColor = "#F97316";
+        else if (isFragile) {
+            summaryText = `Critical inter-dependency detected. The network hit a break point at ${bpDensity} density. This suggests a 'Hub-and-Spoke' vulnerability where systemic nodes carry too much weight.`;
+            actionText = "Dilute systemic hub concentration. Re-distribute weights across sub-scales to prevent single-point failures. Current Cascade Factor is unsustainable.";
+            chipText = "SYSTEMIC FRAGILITY";
+            chipColor = "#fbbc05"; // Google Yellow
         }
-        // Scenario C: Delayed Stress (Late break, high latency)
-        else if (hasBroken && !isEarlyBreak) {
-            summaryText = `The system is robust but has a "hard ceiling." It handles moderate stress perfectly until density hits ${bpDensity}, at which point it suffers a "Shear Failure." It's strong until it isn't.`;
-            actionText = "Implement safety valves for high-density operations. Your break point is late, which often leads to complacency. Pre-emptively de-leverage when density hits 0.8.";
-            chipText = "LATE-STAGE FRACTURE";
-            chipColor = "#F59E0B";
+        else if (isContained) {
+            summaryText = `Managed stress profile. While shocks are reverberating with a ${factor.toFixed(1)}x multiplier, they are successfully contained. The system is 'Elastic'—it bends but avoids terminal fracture.`;
+            actionText = "Monitor regional clusters. Risk is leaking slowly between nodes but isn't hitting exponential thresholds. Maintain current insulation protocols.";
+            chipText = "REGIONAL CONTAINMENT";
+            chipColor = "#1a73e8"; // Google Blue
         }
-        // Scenario D: Stable with friction (No break, moderate factor)
-        else if (!hasBroken && factor > 2) {
-            summaryText = `Systemic friction is present. While the network hasn't broken, the ${factor.toFixed(1)}x multiplier indicates that shocks are reverberating across scales. The system is "Elastic"—it bends but hasn't snapped yet.`;
-            actionText = "Monitor the 'Cascade Cost.' Even without a break point, the cost of dealing with internal stress is rising. Scale back nodes to reduce internal noise.";
-            chipText = "FRAGILE ELASTICITY";
-            chipColor = "#EAB308";
-        }
-        // Scenario E: Robust Efficiency
-        else {
-            summaryText = `The structural architecture is optimal. Shocks are localized and absorbed. The current density allows for "Risk Insulation," where failures in one region fail to reach the systemic core.`;
-            actionText = "Safe to scale. You have significant headroom before hitting any density thresholds. Maintain current connectivity patterns.";
-            chipText = "ROBUST ARCHITECTURE";
-            chipColor = "#10B981";
+        else { // isRobust
+            summaryText = `Systemic architecture is optimal. Shocks are localized and absorbed. Connectivity allows for 'Risk Insulation' where localized failures never reach the core infrastructure.`;
+            actionText = "Safe for expansion. You have significant headroom before hitting any density triggers. Current topology is the benchmark for resilience.";
+            chipText = "ROBUST INSULATION";
+            chipColor = "#34a853"; // Google Green
         }
 
         // --- Visual Intelligence ---
         if (trendDesc) {
-            if (hasBroken && isHighFactor) {
-                trendDesc.innerText = "The vertical 'Exponential Spike' signifies a loss of system control. The geometry of the risk is no longer linear; it is a self-sustaining contagion.";
-            } else if (factor > 3) {
-                trendDesc.innerText = "The 'Parabolic Curve' shows risk accelerating faster than the density increases. This is a classic indicator of systemic friction before a potential break.";
+            const vals = data.data[0]?.values || [];
+            const lastVal = vals[vals.length - 1];
+            const prevVal = vals[vals.length - 2] || lastVal;
+            const growth = lastVal / prevVal;
+
+            if (hasBroken && growth > 5) {
+                trendDesc.innerText = "The 'Exponential Spike' signifies a total loss of system control. Risk geometry is no longer linear and exceeds recovery thresholds.";
+            } else if (hasBroken || factor > 3) {
+                trendDesc.innerText = "The 'Parabolic Acceleration' shows risk growing faster than density. This is a classic indicator of high systemic friction.";
+            } else if (factor > 1.2) {
+                trendDesc.innerText = "The 'Linear Trajectory' suggests the system is absorbing shock steadily. While stress is present, the growth is manageable.";
             } else {
-                trendDesc.innerText = "The 'Linear Trajectory' suggests the system is absorbing shock at a constant rate. This is the desired behavior for a resilient infrastructure.";
+                trendDesc.innerText = "The 'Flat Baseline' indicates total resilience. Shocks are absorbed at the point of origin with zero propagation.";
             }
         }
 
@@ -484,14 +486,23 @@ document.getElementById('apply-template-btn').onclick = () => {
     // Model specific translation:
     // We map the single density to a range for the chart visualization
     const densityVal = p.density;
-    document.getElementById('densities').value = `${(densityVal * 0.5).toFixed(1)}, ${(densityVal * 0.8).toFixed(1)}, ${densityVal.toFixed(1)}, ${(densityVal * 1.2).toFixed(1)}, ${(densityVal * 1.5).toFixed(1)}`;
+    document.getElementById('densities').value = `${(densityVal * 0.4).toFixed(2)}, ${(densityVal * 0.7).toFixed(2)}, ${densityVal.toFixed(2)}, ${(densityVal * 1.3).toFixed(2)}, ${(densityVal * 1.8).toFixed(2)}, ${(densityVal * 2.5).toFixed(2)}`;
     
-    document.getElementById('dimension_scales').value = "10, 50, 100, 250"; // Keep standard scales for comparison
-    document.getElementById('regions').value = d.regions.length * 5; // Scale up regions for model
-    document.getElementById('scenarios').value = d.scenarios.length * 5;
+    // Context-aware dimension scales based on event intensity
+    const intensity = p.shock_magnitude;
+    if (intensity > 0.9) {
+        document.getElementById('dimension_scales').value = "50, 150, 350, 600, 1000";
+    } else if (intensity > 0.7) {
+        document.getElementById('dimension_scales').value = "25, 100, 250, 500, 750";
+    } else {
+        document.getElementById('dimension_scales').value = "10, 50, 150, 300, 450";
+    }
+
+    document.getElementById('regions').value = d.regions.length * 8; 
+    document.getElementById('scenarios').value = d.scenarios.length * 10;
     document.getElementById('initial_shock').value = 1000000 * p.shock_magnitude;
-    document.getElementById('time_units').value = parseInt(p.time_horizon.split('_')[0].substring(2)) || 12;
-    document.getElementById('num_nodes').value = 1000; // Standard high fidelity for templates
+    document.getElementById('time_units').value = parseInt(p.time_horizon.split('_')[0].substring(2)) || 24;
+    document.getElementById('num_nodes').value = intensity > 0.8 ? 4000 : 2000;
 
     // 2. Switch to simulation tab
     navLinks[0].click();
@@ -593,8 +604,52 @@ function initScrollAnimations() {
     requestAnimationFrame(updateAnimations);
 }
 
+// Tooltip Logic
+function initTooltips() {
+    const tooltipEl = document.createElement('div');
+    tooltipEl.className = 'premium-tooltip hidden';
+    document.body.appendChild(tooltipEl);
+
+    document.querySelectorAll('[data-tooltip]').forEach(el => {
+        el.addEventListener('mouseenter', (e) => {
+            const content = el.getAttribute('data-tooltip');
+            tooltipEl.innerText = content;
+            tooltipEl.classList.remove('hidden');
+        });
+
+        el.addEventListener('mousemove', (e) => {
+            const x = e.clientX;
+            const y = e.clientY;
+            
+            // Offset to prevent covering the cursor
+            tooltipEl.style.left = `${x + 20}px`;
+            tooltipEl.style.top = `${y + 20}px`;
+        });
+
+        el.addEventListener('mouseleave', () => {
+            tooltipEl.classList.add('hidden');
+        });
+    });
+}
+
 // Initial State
 window.addEventListener('DOMContentLoaded', () => {
     initScrollAnimations();
     loadTemplates(); 
+    initTooltips();
+    
+    // Initialize default scenario (Systemic Fragility)
+    const defaultCard = document.querySelector('.decision-card.selected');
+    if (defaultCard) {
+        const scenarioData = getScenarioPayload(defaultCard.dataset.scenario);
+        if (scenarioData) {
+            document.getElementById('densities').value = scenarioData.densities;
+            document.getElementById('dimension_scales').value = scenarioData.dimension_scales;
+            document.getElementById('regions').value = scenarioData.regions;
+            document.getElementById('scenarios').value = scenarioData.scenarios;
+            document.getElementById('initial_shock').value = scenarioData.initial_shock;
+            document.getElementById('time_units').value = scenarioData.time_units;
+            document.getElementById('num_nodes').value = scenarioData.num_nodes;
+        }
+    }
 });

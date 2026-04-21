@@ -21,75 +21,25 @@
             <h1 class="nav-logo">CASCADE</h1>
             <div class="nav-links">
                 <a href="#simulation-section" class="nav-link">Simulation</a>
-                <a href="#analyzer-section" class="nav-link">Event Analyzer</a>
                 <a href="#outcome-section" class="nav-link">Outcome Analyst</a>
+                <a href="#analyzer-section" class="nav-link">Event Analyzer</a>
                 <a href="#glossary-section" class="nav-link">Glossary</a>
             </div>
-            <div id="system-status-dot" class="dot"></div>
         </div>
     </nav>
 
     <div class="bento-wrapper">
+        <!-- New Hero Header Section -->
+        <header class="hero-section animate-rise">
+            <h2 class="hero-label">Institutional Risk Modeling</h2>
+            <h1 class="hero-title">Fracture Telemetry</h1>
+            <div class="hero-accent"></div>
+        </header>
+
         <!-- Main Simulation Section -->
         <section id="simulation-section" class="bento-section">
-            <header class="section-banner">
-                <div class="header-stack">
-                    <h2 class="section-label">Institutional Risk Modeling</h2>
-                    <h3 class="section-title">Fracture Telemetry</h3>
-                </div>
-                <div class="status-indicator">
-                    <span id="system-status-text">STANDBY</span>
-                </div>
-            </header>
 
-            <!-- Detailed About Section -->
-            <div class="tile tile-about">
-                <div class="tile-header">
-                    <h2 class="tile-title">Understanding the CASCADE Engine</h2>
-                </div>
-                <div class="about-content">
-                    <p>
-                        Imagine a massive web of interconnected assets like power grids, banks, or supply lines.
-                        In a healthy state, the web is flexible. But as it becomes more <strong>dense</strong> and
-                        tightly packed,
-                        a single point of failure can no longer be contained. It spreads like a wildfire.
-                    </p>
-                    <p>
-                        This is the <strong>"Jenga Effect"</strong>: as you add more connections (Density), the system
-                        becomes more
-                        efficient but also more fragile. The <strong>CASCADE Risk Engine</strong> puts this web under
-                        extreme pressure.
-                        By sliding the controls below, you define the "Stress Vacuum"--essentially setting up a disaster
-                        scenario
-                        to see if your network survives or snaps.
-                    </p>
-                    <p>
-                        When you click <strong>Run Fracture Test</strong>, the engine instantly calculates thousands of
-                        potential futures,
-                        finding the exact "Break Point" where your network would cross the point of no return.
-                    </p>
-                </div>
-            </div>
 
-            <!-- Consolidated Metrics Row (Neutralized) -->
-            <div class="metrics-integrated-row">
-                <div class="tile tile-metric">
-                    <h3 class="metric-label">Cascade Cost (µs)</h3>
-                    <span id="stat-latency" class="metric-value">—</span>
-                </div>
-                <div class="tile tile-metric">
-                    <h3 class="metric-label">Break Point</h3>
-                    <span id="stat-break" class="metric-value">—</span>
-                </div>
-                <div class="tile tile-metric">
-                    <h3 class="metric-label">Cascade Factor</h3>
-                    <span id="stat-cascade" class="metric-value">—</span>
-                </div>
-                <div class="tile tile-metric">
-                    <h3 class="metric-label">Node Ceiling</h3>
-                    <span id="stat-nodes" class="metric-value">—</span>
-                </div>
-            </div>
 
             <div class="bento-grid-simulation">
                 <!-- Controls Tile (Slider Based) -->
@@ -196,6 +146,30 @@
                 </section>
             </div>
 
+            <!-- Consolidated Metrics Row (Neutralized) -->
+            <div class="metrics-integrated-row">
+                <div class="tile tile-metric"
+                    data-tooltip="Measures systemic friction. It represents the computational and resource overhead required to prevent total system shutdown as risk propagates.">
+                    <h3 class="metric-label">Cascade Cost (µs)</h3>
+                    <span id="stat-latency" class="metric-value">—</span>
+                </div>
+                <div class="tile tile-metric"
+                    data-tooltip="The mathematical 'cliff.' Beyond this specific network density, the system enters an unrecoverable exponential failure state.">
+                    <h3 class="metric-label">Break Point</h3>
+                    <span id="stat-break" class="metric-value">—</span>
+                </div>
+                <div class="tile tile-metric"
+                    data-tooltip="The risk multiplier. A factor of 4.0 means the secondary cascading damage was four times the magnitude of the initial shock.">
+                    <h3 class="metric-label">Cascade Factor</h3>
+                    <span id="stat-cascade" class="metric-value">—</span>
+                </div>
+                <div class="tile tile-metric"
+                    data-tooltip="The structural complexity limit. Higher ceilings simulate more intricate, deeply interconnected institutional networks.">
+                    <h3 class="metric-label">Node Ceiling</h3>
+                    <span id="stat-nodes" class="metric-value">—</span>
+                </div>
+            </div>
+
             <!-- Results Table Tile -->
             <section id="results-table-tile" class="tile tile-table hidden">
                 <div class="tile-header">
@@ -214,6 +188,73 @@
                     </table>
                 </div>
             </section>
+        </section>
+
+        <!-- Outcome Analyst Section -->
+        <section id="outcome-section" class="bento-section">
+            <header class="section-banner">
+                <div class="header-stack">
+                    <h2 class="section-label">Post-Fracture Intelligence</h2>
+                    <h3 class="section-title">Outcome Analyst</h3>
+                </div>
+            </header>
+
+            <!-- Comprehensive Summary Tile -->
+            <div id="dynamic-analyst-tile" class="tile tile-analyst animate-rise">
+                <div class="analyst-header">
+                    <div class="analyst-icon">
+                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                            stroke-width="3">
+                            <path
+                                d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
+                        </svg>
+                    </div>
+                    <h2 class="tile-title">Executive Risk Assessment</h2>
+                </div>
+                <div class="report-content">
+                    <div class="report-section">
+                        <h3>Scenario Verdict</h3>
+                        <p id="outcome-summary" class="report-body">No simulation data found. Please run a fracture test
+                            to generate an assessment.</p>
+                        <div id="outcome-chip" class="insight-chip">AWAITING_DATA</div>
+                    </div>
+                    <div class="report-section">
+                        <h3>Strategic Implications</h3>
+                        <p id="outcome-action" class="report-body">The analyst will provide mitigation strategies based
+                            on the observed break points.</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Metric Translation Deep Dive (Full Width Resize) -->
+            <div class="tile tile-metrics-explanation animate-rise">
+                <div class="tile-header">
+                    <h2 class="tile-title">Objective Metric Translation</h2>
+                </div>
+                <div class="explanation-grid">
+                    <div class="explanation-item"
+                        data-tooltip="The 'Lag' of the crisis. Measures how hard the infrastructure is working to stay online.">
+                        <strong id="ex-latency-val">— µs</strong>
+                        <span>Cascade Cost</span>
+                        <p>This represents the "systemic friction." It measures how much resources the system
+                            consumes to prevent a total shutdown as risk propagates.</p>
+                    </div>
+                    <div class="explanation-item"
+                        data-tooltip="The point of no return. The exact density where structural integrity vanishes.">
+                        <strong id="ex-break-val">Safe</strong>
+                        <span>Break Point</span>
+                        <p>The exact density where the math "breaks." Beyond this point, any further shock causes an
+                            exponential, unrecoverable failure.</p>
+                    </div>
+                    <div class="explanation-item"
+                        data-tooltip="The intensity multiplier. Shows how much the problem grew from its original size.">
+                        <strong id="ex-factor-val">1.00x</strong>
+                        <span>Cascade Factor</span>
+                        <p>The intensity multiplier. A factor of 4.0 means the resulting damage was 4 times the size
+                            of the initial problem.</p>
+                    </div>
+                </div>
+            </div>
         </section>
 
         <!-- Event Analyzer Section -->
@@ -306,82 +347,7 @@
             </div>
         </section>
 
-        <!-- Outcome Analyst Section -->
-        <section id="outcome-section" class="bento-section">
-            <header class="section-banner">
-                <div class="header-stack">
-                    <h2 class="section-label">Post-Fracture Intelligence</h2>
-                    <h3 class="section-title">Outcome Analyst</h3>
-                </div>
-            </header>
 
-            <!-- Comprehensive Summary Tile -->
-            <div id="dynamic-analyst-tile" class="tile tile-analyst animate-rise">
-                <div class="analyst-header">
-                    <div class="analyst-icon">
-                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><path d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"/></svg>
-                    </div>
-                    <h2 class="tile-title">Executive Risk Assessment</h2>
-                </div>
-                <div class="report-content">
-                    <div class="report-section">
-                        <h3>Scenario Verdict</h3>
-                        <p id="outcome-summary" class="report-body">No simulation data found. Please run a fracture test to generate an assessment.</p>
-                        <div id="outcome-chip" class="insight-chip">AWAITING_DATA</div>
-                    </div>
-                    <div class="report-section">
-                        <h3>Strategic Implications</h3>
-                        <p id="outcome-action" class="report-body">The analyst will provide mitigation strategies based on the observed break points.</p>
-                    </div>
-                </div>
-            </div>
-
-            <div class="analyzer-layout">
-                <!-- Metric Translation Deep Dive -->
-                <div class="tile tile-metrics-explanation">
-                    <div class="tile-header">
-                        <h2 class="tile-title">Objective Metric Translation</h2>
-                    </div>
-                    <div class="explanation-grid">
-                        <div class="explanation-item">
-                            <strong id="ex-latency-val">— µs</strong>
-                            <span>Cascade Cost</span>
-                            <p>This represents the "systemic friction." It measures how much resources the system consumes to prevent a total shutdown as risk propagates.</p>
-                        </div>
-                        <div class="explanation-item">
-                            <strong id="ex-break-val">Safe</strong>
-                            <span>Break Point</span>
-                            <p>The exact density where the math "breaks." Beyond this point, any further shock causes an exponential, unrecoverable failure.</p>
-                        </div>
-                        <div class="explanation-item">
-                            <strong id="ex-factor-val">1.00x</strong>
-                            <span>Cascade Factor</span>
-                            <p>The intensity multiplier. A factor of 4.0 means the resulting damage was 4 times the size of the initial problem.</p>
-                        </div>
-                    </div>
-                </div>
-
-                <!-- Visual Interpretation Tile -->
-                <div class="tile tile-visual-intel">
-                    <div class="tile-header">
-                        <h2 class="tile-title">Trend Interpretation</h2>
-                    </div>
-                    <div class="visual-intel-body">
-                        <p id="visual-trend-desc">The graph plots system latency against network density. When you see a vertical spike, you are witnessing the "cliff effect"—the moment structural integrity vanishes.</p>
-                        <div class="intel-highlights">
-                            <div class="intel-row">
-                                <div class="intel-indicator" style="background: var(--accent-blue)"></div>
-                                <span>Linear Zone: Manageable stress</span>
-                            </div>
-                            <div class="intel-row">
-                                <div class="intel-indicator" style="background: var(--accent-red)"></div>
-                                <span>Spike Zone: Systemic collapse imminent</span>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </section>
 
         <!-- Glossary Section -->
         <section id="glossary-section" class="bento-section">
@@ -391,6 +357,40 @@
                     <h3 class="section-title">Glossary / Reference</h3>
                 </div>
             </header>
+
+            <!-- Detailed About Section -->
+            <div class="tile tile-about">
+                <div class="tile-header">
+                    <h2 class="tile-title">Understanding the CASCADE Engine</h2>
+                </div>
+                <div class="about-content">
+                    <p>
+                        Imagine a massive web of interconnected assets like power grids, banks, or supply lines.
+                        In a healthy state, the web is flexible. But as it becomes more <strong>dense</strong> and
+                        tightly packed,
+                        a single point of failure can no longer be contained. It spreads like a wildfire.
+                    </p>
+                    <p>
+                        This is the <strong>"Jenga Effect"</strong>: as you add more connections (Density), the
+                        system
+                        becomes more
+                        efficient but also more fragile. The <strong>CASCADE Risk Engine</strong> puts this web
+                        under
+                        extreme pressure.
+                        By sliding the controls below, you define the "Stress Vacuum"--essentially setting up a
+                        disaster
+                        scenario
+                        to see if your network survives or snaps.
+                    </p>
+                    <p>
+                        When you click <strong>Run Fracture Test</strong>, the engine instantly calculates thousands
+                        of
+                        potential futures,
+                        finding the exact "Break Point" where your network would cross the point of no return.
+                    </p>
+                </div>
+            </div>
+
             <section class="tile tile-glossary">
                 <!-- Part 1: How to Set Your Simulation (Inputs) -->
                 <div class="glossary-grid">
@@ -449,7 +449,7 @@
                     <div class="glossary-item">
                         <strong class="glossary-term">Cascade Factor</strong>
                         <p class="glossary-body">Measure of how much the risk multiplied. A factor of 5.0 means the
-                        total damage was five times worse than the first hit.</p>
+                            total damage was five times worse than the first hit.</p>
                     </div>
                 </div>
             </section>

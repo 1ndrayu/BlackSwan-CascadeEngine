@@ -54,24 +54,28 @@ class RippleEngine:
         self.graph[source].append((target, weight))
 
     @us_timer
-    def run_ripple(self, start_node: Coord4D, shock_value: float, systemic_threshold: float = 1_000_000, epsilon: float = 1e-9, limit: int = 1_000_000) -> Dict:
+    def run_ripple(self, start_nodes: List[Coord4D], shock_value: float, systemic_threshold: float = 1_000_000, epsilon: float = 1e-9, limit: int = 1_000_000) -> Dict:
         """
-        Propagates a shock and returns systemic impact telemetry.
+        Propagates a shock across multiple start nodes and returns systemic impact telemetry.
         """
-        old_val = self.cube.get_val(start_node)
-        delta = shock_value - old_val
-        
-        if abs(delta) <= epsilon:
-            return {"impact": 0.0, "fracture": False, "nodes_affected": 0}
-            
-        self.cube.set_val(start_node, shock_value)
-        
         pending_impacts = defaultdict(float)
-        queue = deque([start_node])
-        pending_impacts[start_node] = delta
+        queue = deque()
+        total_systemic_impact = 0
+        nodes_affected = 0
         
-        total_systemic_impact = abs(delta)
-        nodes_affected = 1
+        for node in start_nodes:
+            old_val = self.cube.get_val(node)
+            delta = shock_value - old_val
+            if abs(delta) > epsilon:
+                self.cube.set_val(node, shock_value)
+                queue.append(node)
+                pending_impacts[node] = delta
+                total_systemic_impact += abs(delta)
+                nodes_affected += 1
+
+        if not queue:
+            return {"impact": 0.0, "fracture": False, "nodes_affected": 0, "steps": 0}
+            
         fractured = False
         steps = 0
         
@@ -102,11 +106,15 @@ class RippleEngine:
                     
                     if total_systemic_impact > systemic_threshold:
                         fractured = True
+                        break # Stop inner loop
                     
                     if target_node not in pending_impacts:
                         queue.append(target_node)
                     
                     pending_impacts[target_node] += impact
+                
+                if fractured:
+                    break # Stop outer loop
 
         return {
             "impact": total_systemic_impact,
