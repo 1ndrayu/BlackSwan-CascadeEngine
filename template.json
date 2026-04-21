@@ -1,0 +1,80 @@
+{
+    "simulations": [
+        {
+            "event": "Suez Canal Blockage",
+            "stress_parameters": {
+                "density": 0.85,
+                "scale": "Global Logistics",
+                "shock_magnitude": 0.95,
+                "propagation_type": "recursive_dependency",
+                "time_horizon": "T+30_Days"
+            },
+            "risk_cube_dimensions": {
+                "assets": [
+                    "Maritime_Freight",
+                    "Retail_Inventory",
+                    "Hydrocarbon_Supply"
+                ],
+                "regions": [
+                    "Suez_EMEA",
+                    "South_East_Asia",
+                    "North_Atlantic"
+                ],
+                "scenarios": [
+                    "Total_Obstruction",
+                    "Reroute_Cape_of_Good_Hope"
+                ]
+            }
+        },
+        {
+            "event": "Lehman Brothers Bankruptcy",
+            "stress_parameters": {
+                "density": 0.92,
+                "scale": "Systemic Finance",
+                "shock_magnitude": 1.0,
+                "propagation_type": "liquidity_contagion",
+                "time_horizon": "T+14_Days"
+            },
+            "risk_cube_dimensions": {
+                "assets": [
+                    "MBS_Tranches",
+                    "Interbank_Lending",
+                    "Equity_Derivatives"
+                ],
+                "regions": [
+                    "Wall_Street",
+                    "London_City",
+                    "EU_Banking_Union"
+                ],
+                "scenarios": [
+                    "Sudden_Default",
+                    "Market_Freeze"
+                ]
+            }
+        },
+        {
+            "event": "CrowdStrike Global Outage",
+            "stress_parameters": {
+                "density": 0.78,
+                "scale": "Cyber Infrastructure",
+                "shock_magnitude": 0.88,
+                "propagation_type": "broadcast_failure",
+                "time_horizon": "T+48_Hours"
+            },
+            "risk_cube_dimensions": {
+                "assets": [
+                    "Azure_Endpoints",
+                    "SaaS_Platforms",
+                    "ATM_Networks"
+                ],
+                "regions": [
+                    "Global_Nodes"
+                ],
+                "scenarios": [
+                    "Kernel_Level_Fault",
+                    "Manual_Recovery_Delay"
+                ]
+            }
+        }
+    ]
+}
